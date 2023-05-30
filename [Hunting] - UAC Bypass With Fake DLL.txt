@@ -1,0 +1,12 @@
+// Title: [Hunting] - UAC Bypass With Fake DLL
+// Desc:  Attempts to load dismcore.dll after dropping it %PATH%
+// Ref - https://steemit.com/utopian-io/@ah101/uac-bypassing-utility
+// MITRE: Abuse Elevation Control Mechanism: Bypass User Account Control (T1548.002: Defense Evasion)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_uac_bypass_via_dism.yml
+DeviceImageLoadEvents 
+| where ((InitiatingProcessFolderPath endswith @'\dism.exe' and FolderPath endswith @'\dismcore.dll') 
+    and not (FolderPath =~ @'C:\Windows\System32\Dism\dismcore.dll'))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

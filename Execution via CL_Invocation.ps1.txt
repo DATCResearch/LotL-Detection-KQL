@@ -1,0 +1,14 @@
+// Title: Execution via CL_Invocation.ps1
+// Desc: Detects Execution via SyncInvoke in CL_Invocation.ps1 module (diagnostics script)
+// Ref - https://lolbas-project.github.io/lolbas/Scripts/Cl_invocation/
+// Ref - https://www.freebuf.com/articles/system/232074.html
+// MITRE: https://attack.mitre.org/techniques/T1216/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: C:\Windows\diagnostics\system\AERO\CL_Invocation.ps1   \nSyncInvoke <executable> [args]
+// Usecase: Proxy execution
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_cl_invocation.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where (ProcessCommandLine contains @'CL_Invocation.ps1' and ProcessCommandLine contains @'SyncInvoke')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

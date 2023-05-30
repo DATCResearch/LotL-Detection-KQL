@@ -1,0 +1,24 @@
+// Title: Detect SMB Discovery activities
+// Desc: To detect a host that performs SMB Discovery by alerting if a device creates more then 100 unique SMB sessions 
+//     or SSL within 15 minutes. That is one of the characteristics of bloodhound. The SMB sessions can be used to identify remote systems.
+// On: 1/12/2023
+// Modified by: Frankie
+// Ref - https://github.com/Bert-JanP/Hunting-Queries-Detection-Rules
+let clients = dynamic (['chrome.exe', 'msedge.exe', 'Teams.exe', 'Microsoft Outlook', 'OUTLOOK.EXE', 'EXCEL.EXE', 'Microsoft Teams Helper', 'Google Chrome Helper']);
+DeviceNetworkEvents
+| where Timestamp < ago(1h)
+| where RemotePort == 445 or RemotePort == 443
+| where not(InitiatingProcessFileName has_any (clients))
+| summarize
+     TotalIpsAccessed = dcount(RemoteIP),
+     RemoteIPs = make_set(RemoteIP),
+     arg_max(Timestamp, *)
+     by DeviceName, bin(Timestamp, 5m) // Can be adjusted to reduce false positives
+     | where TotalIpsAccessed > 300 // Can be adjusted to reduce false positives
+| project-reorder
+     Timestamp,
+     DeviceName,
+     InitiatingProcessAccountDomain,
+     InitiatingProcessAccountName,
+     InitiatingProcessCommandLine,
+     InitiatingProcessFolderPath

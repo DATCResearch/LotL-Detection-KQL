@@ -1,0 +1,25 @@
+// Title: Detect new RDP connections in the past 30 days
+// On: 16-01-2023, 16-02-2023
+// By: Bert-JanP
+let PreviousRDPConnections = materialize (
+     DeviceNetworkEvents
+     | where Timestamp > ago(30d)
+     | where ActionType == "ConnectionSuccess"
+     | where not(InitiatingProcessFileName == "Microsoft.Tri.Sensor.exe") 
+// DFI Sensor
+     | where RemotePort == 3389
+     );
+PreviousRDPConnections
+| where Timestamp > ago(1d)
+| join kind=leftanti (PreviousRDPConnections
+     | where Timestamp < ago(1d))
+     on DeviceName, InitiatingProcessAccountName
+| project
+     Timestamp,
+     DeviceName,
+     InitiatingProcessAccountDomain,
+     InitiatingProcessAccountName,
+     InitiatingProcessCommandLine,
+     RemoteUrl,
+     RemoteIP
+| sort by Timestamp

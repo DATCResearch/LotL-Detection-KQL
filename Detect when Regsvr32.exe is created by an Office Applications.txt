@@ -1,0 +1,20 @@
+// Title: Detect when Regsvr32.exe is created by an Office Applications
+// On: 16-01-2023, 16-02-2023
+// By: Bert-JanP
+// Ref - https://github.com/Bert-JanP/Hunting-Queries-Detection-Rules
+// Ref - https://attack.mitre.org/techniques/T1218/010/ (ystem Binary Proxy Execution)
+// Ref - https://redcanary.com/threat-detection-report/threats/TA551/
+// Ref - https://threatpost.com/cybercriminals-windows-utility-regsvr32-malware/178333/
+// Severity: High
+let OfficeApplications = dynamic(['winword.exe', 'powerpnt.exe', 'excel.exe', 'Teams']);
+DeviceProcessEvents
+| where FileName == "regsvr32.exe"
+| where InitiatingProcessFileName has_any (OfficeApplications)
+| project
+     Timestamp,
+     DeviceName,
+     AccountName,
+     AccountDomain,
+     ProcessCommandLine,
+     InitiatingProcessCommandLine,
+     InitiatingProcessFileName

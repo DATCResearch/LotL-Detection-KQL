@@ -1,0 +1,16 @@
+// Title: Diantz.exe Download or Compress Into a CAB File
+// Desc: Download and compress a remote file and store it in a cab file on local machine.
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Diantz/
+// MITRE: https://attack.mitre.org/techniques/T1105 (Command and Control: Ingress Tool Transfer)
+// Severity: medium
+// Trigger: diantz.exe \\remotemachine\pathToFile\file.exe c:\destinationFolder\file.cab
+// Usecase: Download and compress into a cab file.
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_diantz_remote_cab.yml
+// By: Frankie Li
+// On: 06-05-2023
+DeviceProcessEvents 
+| where (ProcessCommandLine contains @'diantz.exe' 
+    and ProcessCommandLine contains " \\\\"
+    and ProcessCommandLine contains @'.cab')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine
+

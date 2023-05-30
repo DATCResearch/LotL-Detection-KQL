@@ -1,0 +1,13 @@
+// Title: [Hunting] - Web Browsers DLL Sideloading
+// Desc: etects DLL sideloading of DLLs that are part of web browsers
+// Ref - https://hijacklibs.net/ # For list of DLLs that could be sideloaded 
+// MITRE: https://attack.mitre.org/techniques/T1574/001/ (Defense Evasion: Hijack Execution Flow: DLL Search Order Hijacking)
+// Severity: high
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_side_load_web_browsers.yml
+DeviceImageLoadEvents 
+| where (FolderPath endswith @'\chrome_frame_helper.dll' and not (FolderPath contains @'\AppData\local\Google\Chrome\Application\' 
+    or (FolderPath startswith @'C:\Program Files\Google\Chrome\Application\'
+     or FolderPath startswith @'C:\Program Files (x86)\Google\Chrome\Application\')))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

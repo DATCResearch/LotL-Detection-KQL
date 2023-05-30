@@ -1,0 +1,41 @@
+// Title: [Hunting] - WMI Modules Loaded
+// Desc:  Detects non wmiprvse loading WMI modules
+// Ref - https://threathunterplaybook.com/notebooks/windows/02_execution/WIN-190811201010.html
+// MITRE: Windows Management Instrumentation (T1047: Execution)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_wmi_module_load.yml
+DeviceImageLoadEvents 
+| where (((FolderPath endswith @'\wmiclnt.dll' or FolderPath endswith @'\WmiApRpl.dll' 
+    or FolderPath endswith @'\wmiprov.dll' or FolderPath endswith @'\wmiutils.dll' 
+    or FolderPath endswith @'\wbemcomn.dll' or FolderPath endswith @'\wbemprox.dll' 
+    or FolderPath endswith @'\WMINet_Utils.dll' or FolderPath endswith @'\wbemsvc.dll' 
+    or FolderPath endswith @'\fastprox.dll') 
+    and not (InitiatingProcessFolderPath endswith @'\WmiPrvSE.exe' 
+    or InitiatingProcessFolderPath endswith @'\WmiApSrv.exe' 
+    or InitiatingProcessFolderPath endswith @'\svchost.exe' 
+    or InitiatingProcessFolderPath endswith @'\DeviceCensus.exe' 
+    or InitiatingProcessFolderPath endswith @'\CompatTelRunner.exe' 
+    or InitiatingProcessFolderPath endswith @'\sdiagnhost.exe' 
+    or InitiatingProcessFolderPath endswith @'\SIHClient.exe' 
+    or InitiatingProcessFolderPath endswith @'\ngentask.exe' 
+    or InitiatingProcessFolderPath endswith @'\windows\system32\taskhostw.exe' 
+    or InitiatingProcessFolderPath endswith @'\windows\system32\MoUsoCoreWorker.exe' 
+    or InitiatingProcessFolderPath endswith @'\windows\system32\wbem\WMIADAP.exe' 
+    or InitiatingProcessFolderPath endswith @'C:\Windows\Sysmon64.exe' 
+    or InitiatingProcessFolderPath endswith @'C:\Windows\Sysmon.exe' 
+    or InitiatingProcessFolderPath endswith @'C:\Windows\System32\wbem\unsecapp.exe' 
+    or InitiatingProcessFolderPath endswith @'\logman.exe' 
+    or InitiatingProcessFolderPath endswith @'\systeminfo.exe' 
+    or InitiatingProcessFolderPath endswith @'\nvcontainer.exe' 
+    or InitiatingProcessFolderPath endswith @'C:\Windows\System32\wbem\WMIC.exe' 
+    or InitiatingProcessFolderPath endswith @'\explorer.exe' 
+    or InitiatingProcessFolderPath endswith @'\opera_autoupdate.exe' 
+    or InitiatingProcessFolderPath endswith @'\MsMpEng.exe' 
+    or InitiatingProcessFolderPath endswith @'\thor64.exe' 
+    or InitiatingProcessFolderPath endswith @'\thor.exe')) 
+    and not (InitiatingProcessFolderPath startswith @'C:\Program Files\' 
+    or InitiatingProcessFolderPath startswith @'C:\Program Files (x86)\'))
+| where not(InitiatingProcessFolderPath contains "powershell")
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

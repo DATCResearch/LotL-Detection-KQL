@@ -1,0 +1,22 @@
+// Title: [Hunting] - Antivirus Software DLL Sideloading
+// Desc: Detects DLL sideloading of DLLs that are part of antivirus software suchas McAfee, Symantec...etc
+// Ref - https://hijacklibs.net/ # For list of DLLs that could be sideloaded
+// Ref - https://www.mandiant.com/resources/reports/dll-side-loading-thorn-side-anti-virus-industry
+// MITRE: Hijack Execution Flow: DLL Search Order Hijacking (T1574.001: Defense Evasion)
+// Severity: high
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_side_load_antivirus.yml
+DeviceImageLoadEvents 
+| where ((((FolderPath endswith @'\log.dll' and not ((FolderPath startswith @'C:\Program Files\Bitdefender Antivirus Free\' 
+    or FolderPath startswith @'C:\Program Files (x86)\Bitdefender Antivirus Free\') 
+    or (InitiatingProcessFolderPath =~ @'C:\Program Files\Dell\SARemediation\audit\TelemetryUtility.exe' 
+    and (FolderPath in~ (@'C:\Program Files\Dell\SARemediation\plugin\log.dll', @'C:\Program Files\Dell\SARemediation\audit\log.dll'))) 
+    or FolderPath startswith @'C:\Program Files\Canon\MyPrinter\')) 
+    or (FolderPath endswith @'\qrt.dll' and not (FolderPath startswith @'C:\Program Files\F-Secure\Anti-Virus\' 
+    or FolderPath startswith @'C:\Program Files (x86)\F-Secure\Anti-Virus\'))) 
+    or ((FolderPath endswith @'\ashldres.dll' or FolderPath endswith @'\lockdown.dll' or FolderPath endswith @'\vsodscpl.dll') 
+    and not (FolderPath startswith @'C:\Program Files\McAfee\' or FolderPath startswith @'C:\Program Files (x86)\McAfee\'))) 
+    or (FolderPath endswith @'\vftrace.dll' and not (FolderPath startswith @'C:\Program Files\CyberArk\Endpoint Privilege Manager\Agent\x32\' 
+    or FolderPath startswith @'C:\Program Files (x86)\CyberArk\Endpoint Privilege Manager\Agent\x32\')))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

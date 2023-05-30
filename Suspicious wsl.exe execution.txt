@@ -1,0 +1,18 @@
+// Title: Suspicious wsl.exe execution
+// Desc:  Detects Possible usage of Windows Subsystem for Linux (WSL) binary as a LOLBIN
+// Ref - https://lolbas-project.github.io/lolbas/OtherMSBinaries/Wsl/
+// Ref - https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-block-rules
+// Ref - https://attack.mitre.org/techniques/T1202/ (Defense Evasion: Indirect Command Execution)
+// Severity: medium
+// Trigger: wsl.exe -u root -e cat /etc/shadow
+// Usecase: Performs execution of arbitrary Linux commands as root without need for password
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_susp_wsl.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (((FolderPath endswith @'\wsl.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'wsl.exe' 
+or ProcessVersionInfoOriginalFileName =~ @'wsl.exe') and (ProcessCommandLine contains @' -e ' 
+or ProcessCommandLine contains @' --exec ' or ProcessCommandLine contains @' --system ' 
+or ProcessCommandLine contains @' /mnt/c')) and not (InitiatingProcessFolderPath endswith @'\cmd.exe' 
+and (ProcessCommandLine contains @' -d ') and (ProcessCommandLine contains @' -e kill ')))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

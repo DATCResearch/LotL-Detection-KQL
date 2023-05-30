@@ -1,0 +1,13 @@
+// Title: [Hunting] - UAC Bypass Using Iscsicpl
+// Desc:  Detects the "iscsicpl.exe" UAC bypass technique that leverages a DLL Search Order hijacking technique to load a custom DLL's from temp or a any user controlled location in the users %PATH%
+// Ref - https://github.com/hackerhouse-opensource/iscsicpl_bypassUAC
+// Ref - https://twitter.com/wdormann/status/1547583317410607110
+// MITRE: Abuse Elevation Control Mechanism: Bypass User Account Control (T1548.002: Defense Evasion)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_svchost_dll_search_order_hijack.yml
+DeviceImageLoadEvents 
+| where ((InitiatingProcessFolderPath =~ @'C:\Windows\SysWOW64\iscsicpl.exe' and FolderPath endswith @'\iscsiexe.dll') 
+    and not (FolderPath contains @'C:\Windows\') and (FolderPath contains @'iscsiexe.dll'))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

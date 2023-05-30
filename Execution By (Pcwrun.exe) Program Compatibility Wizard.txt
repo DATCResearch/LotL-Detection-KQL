@@ -1,0 +1,15 @@
+// Title: Execution By (Pcwrun.exe) Program Compatibility Wizard
+// Desc: Detect indirect command execution via Program Compatibility Assistant pcwrun.exe
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Pcwrun/
+// Usecase: Proxy execution of binary
+// Leverage the MSDT follina vulnerability through Pcwrun 
+// MITRE: https://attack.mitre.org/techniques/T1218/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: Pcwrun.exe c:\temp\beacon.exe
+// Usecase: Proxy execution of binary
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_pcwrun.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where InitiatingProcessFolderPath endswith @'\pcwrun.exe'
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

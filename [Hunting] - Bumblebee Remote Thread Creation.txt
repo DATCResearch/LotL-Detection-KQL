@@ -1,0 +1,12 @@
+// Title: [Hunting] - Bumblebee Remote Thread Creation
+// Desc:  Detects remote thread injection events based on action seen used by bumblebee
+// Ref - https://thedfirreport.com/2022/09/26/bumblebee-round-two/
+// MITRE: System Binary Proxy Execution: Rundll32 (T1218.001: Defense Evasion)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/create_remote_thread_win_bumblebee.yml
+DeviceImageLoadEvents 
+| where (InitiatingProcessFolderPath endswith @'\wabmig.exe' or InitiatingProcessFolderPath endswith @'\wab.exe' or InitiatingProcessFolderPath endswith @'\ImagingDevices.exe')
+    and FolderPath endswith @'rundll32.exe'
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

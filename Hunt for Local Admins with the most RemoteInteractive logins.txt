@@ -1,0 +1,14 @@
+// Title: Hunt for Local Admins with the most RemoteInteractive logins
+// On: 16-01-2023, 16-02-2023
+// By: Bert-JanP
+// Ref - https://github.com/Bert-JanP/Hunting-Queries-Detection-Rules
+// Ref - https://attack.mitre.org/techniques/T1078/003/
+// Severity: Low
+DeviceLogonEvents
+| where Timestamp > ago(1d)
+| where IsLocalAdmin == "True"
+| where LogonType == "RemoteInteractive"
+| extend IsLocalLogon = tostring(todynamic(AdditionalFields).IsLocalLogon)
+| summarize DevicesAccessed = make_set(DeviceName) by AccountName, AccountDomain
+| extend TotalDevices = array_length(DevicesAccessed)
+| sort by TotalDevices

@@ -1,0 +1,13 @@
+// Title: To show the Windows devices no onboarded MDE
+// On: 26-01-2023
+// By: Frankie
+// Notes: This query should be run on requested to check with the Security Portal Dashboard item 
+//      called "Discovered devices to onboard"
+DeviceTvmSecureConfigurationAssessment 
+| where Timestamp > ago(7d)
+| where ConfigurationId == "scid-20000" // ConfigurationCategory == "Security controls" and Subcategory == "Onboard Devices"
+| distinct DeviceName
+| join kind=anti DeviceEvents on DeviceName 
+| where not(DeviceName contains "android") // to exclude android devices
+| where not(DeviceName contains "ipad")    // to exclude ipad devices
+//| count 

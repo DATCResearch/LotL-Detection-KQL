@@ -1,0 +1,15 @@
+// Title: Monitoring Winget For LOLbin Execution
+// Desc: Adversaries can abuse winget to download payloads remotely and execute them without touching disk. Winget will be included by default in Windows 10 and is already available in Windows 10 insider programs. The manifest option enables you to install an application by passing in a YAML file directly to the client. Winget can be used to download and install exe's, msi, msix files later.
+// Ref - https://docs.microsoft.com/en-us/windows/package-manager/winget/install#local-install
+// Ref - hhttps://saulpanders.github.com/2022/01/02/New-Year-New-LOLBAS.html
+// MITRE: https://attack.mitre.org/techniques/T1105/ (Command and Control: Ingress Tool Transfer)
+// Trigger: winget.exe install --manifest manifest.yml
+// Severity: medium
+// Usecase: Download and execute an arbitrary file from the internet
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_execution_via_winget.yml
+// By: Frankie Li
+// On: 06-05-2023
+DeviceProcessEvents 
+| where (ProcessCommandLine contains @'winget' and ProcessCommandLine contains @'install' 
+    and (ProcessCommandLine contains @'-m ' or ProcessCommandLine contains @'--manifest'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

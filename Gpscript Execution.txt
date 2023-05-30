@@ -1,0 +1,16 @@
+// Title: Gpscript Execution
+// Desc: Detects the execution of the LOLBIN gpscript, which executes logon or startup scripts configured in Group Policy
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Gpscript/
+// Ref - https://oddvar.moe/2018/04/27/gpscript-exe-another-lolbin-to-the-list/
+// MITRE: https://attack.mitre.org/techniques/T1218/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: Gpscript /startup
+// Usecase: Add local group policy logon script to execute file and hide from defensive counter measures
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_gpscript.yml
+// By: Frankie Li
+// On: 07-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\gpscript.exe' or ProcessVersionInfoOriginalFileName =~ @'GPSCRIPT.EXE' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'GPSCRIPT.EXE') and (ProcessCommandLine contains @' /logon' 
+    or ProcessCommandLine contains @' /startup'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

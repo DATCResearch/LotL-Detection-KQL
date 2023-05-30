@@ -1,0 +1,25 @@
+// Title: Regasm.exe or Regsvcs.exe Execution
+// Desc: Detects suspicious execution of Regasm/Regsvcs utilities (.NET)
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Regasm/
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Regsvcs/
+// Ref - https://pentestlab.blog/2017/05/19/applocker-bypass-regasm-and-regsvcs/
+// MITRE: https://attack.mitre.org/techniques/T1218/009/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: regsvcs.exe AllTheThingsx64.dll
+// Usecase: Execute dll file and bypass Application whitelisting
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_regasm.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((((FolderPath endswith @'\Regsvcs.exe' or FolderPath endswith @'\Regasm.exe') 
+    or InitiatingProcessVersionInfoOriginalFileName in~ (@'RegSvcs.exe', @'RegAsm.exe') 
+    or ProcessVersionInfoOriginalFileName in~ (@'RegSvcs.exe', @'RegAsm.exe')) 
+    and (ProcessCommandLine contains @'\Users\Public\' or ProcessCommandLine contains @'\AppData\Local\Temp\' 
+    or ProcessCommandLine contains @'\Desktop\' or ProcessCommandLine contains @'\Downloads\' 
+    or ProcessCommandLine contains @'\PerfLogs\' or ProcessCommandLine contains @'\Windows\Temp\' 
+    or ProcessCommandLine contains @'\Microsoft\Windows\Start Menu\Programs\Startup\')) 
+    or (((FolderPath endswith @'\Regsvcs.exe' or FolderPath endswith @'\Regasm.exe') 
+    or InitiatingProcessVersionInfoOriginalFileName in~ (@'RegSvcs.exe', @'RegAsm.exe') 
+    or ProcessVersionInfoOriginalFileName in~ (@'RegSvcs.exe', @'RegAsm.exe')) 
+    and not (ProcessCommandLine contains @'.dll')))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

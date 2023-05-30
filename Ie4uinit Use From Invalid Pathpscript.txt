@@ -1,0 +1,16 @@
+// Title: Ie4uinit Use From Invalid Pathpscript 
+// Desc: Detect use of ie4uinit.exe to execute commands from a specially prepared ie4uinit.inf file from a directory other than the usual directories
+// Note: Internet Explorer 每用户初始化实用程序，它对图标缓存数据库执行操作，该图标缓存数据库是“％userprofile％\ AppData \ Local”子目录中的一个隐藏的“ .db”类型文件，图标缓存保留Windows或IE使用的图标副本，以避免重复重绘它们。
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Ie4uinit/
+// Ref - https://bohops.com/2018/03/10/leveraging-inf-sct-fetch-execute-techniques-for-bypass-evasion-persistence-part-2/
+// MITRE: https://attack.mitre.org/techniques/T1218/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: ie4uinit.exe -BaseSettings
+// Usecase: Get code execution by copy files to another location
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_ie4uinit.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents
+| where (InitiatingProcessFolderPath contains "ie4uinit.exe" or InitiatingProcessFolderPath contains "IE4UINIT.EXE")
+    and (not(InitiatingProcessFolderPath contains "c:\\windows\\system32") and not(InitiatingProcessFolderPath contains "c:\\windows\\sysWOW64"))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

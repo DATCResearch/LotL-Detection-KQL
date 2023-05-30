@@ -1,0 +1,21 @@
+// Title: Suspicious Certutil.exe Command Usage
+// Desc: Detects a suspicious Microsoft certutil execution with sub commands like 'decode' sub command, which is sometimes used to decode malicious code
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Certutil/
+// Ref - https://www.freebuf.com/articles/system/232074.html
+// Ref - https://attack.mitre.org/techniques/T1105/ (Command and Control: Ingress Tool Transfer)
+// Severity: high 
+// Trigger: certutil.exe -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
+// Usecase: download from Internet and Encosde/Decode files
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_susp_certutil_command.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\certutil.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'CertUtil.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'CertUtil.exe') and (ProcessCommandLine contains @' -decode ' 
+    or ProcessCommandLine contains @' -decodehex ' or ProcessCommandLine contains @' -urlcache ' 
+    or ProcessCommandLine contains @' -verifyctl ' or ProcessCommandLine contains @' -encode ' 
+    or ProcessCommandLine contains @' -exportPFX ' or ProcessCommandLine contains @' /decode ' 
+    or ProcessCommandLine contains @' /decodehex ' or ProcessCommandLine contains @' /urlcache ' 
+    or ProcessCommandLine contains @' /verifyctl ' or ProcessCommandLine contains @' /encode ' 
+    or ProcessCommandLine contains @' /exportPFX '))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

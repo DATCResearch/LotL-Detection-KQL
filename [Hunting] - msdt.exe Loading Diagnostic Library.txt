@@ -1,0 +1,14 @@
+// Title: [Hunting] - msdt.exe Loading Diagnostic Library
+// Desc: Detects both of CVE-2022-30190 / Follina and DogWalk vulnerability exploiting msdt.exe binary to load sdiageng.dll binary
+// Ref -  https://www.securonix.com/blog/detecting-microsoft-msdt-dogwalk/
+// Ref - https://web.archive.org/web/20160322142537/https://cybersyndicates.com/2015/10/a-no-bull-guide-to-malicious-windows-trouble-shooting-packs-and-application-whitelist-bypass/
+// MITRE: https://attack.mitre.org/techniques/T1202/ (Defense Evasion: Indirect Command Execution)
+// Severity: high
+// Trigger: msdt.exe -path C:\WINDOWS\diagnostics\index\PCWDiagnostic.xml -af C:\PCW8E57.xml /skip TRUE
+// Usecase: Execute code
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_msdt_sdiageng.yml
+DeviceImageLoadEvents 
+| where (InitiatingProcessFolderPath endswith @'\msdt.exe' and FolderPath endswith @'\sdiageng.dll')
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

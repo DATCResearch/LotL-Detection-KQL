@@ -1,0 +1,12 @@
+// Title: Rundll32.exe InstallScreenSaver Execution
+// Desc: An attacker may execute an application as a SCR File using rundll32.exe desk.cpl,InstallScreenSaver
+// Ref - https://lolbas-project.github.io/lolbas/Libraries/Desk/
+// MITRE: https://attack.mitre.org/techniques/T1218/011/ (Defense Evasion: System Binary Proxy Execution: Rundll32)
+// Severity: medium
+// Usecase: Launch any executable payload, as long as it uses the .scr extension.
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_rundll32_installscreensaver.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\rundll32.exe' and ProcessCommandLine contains @'InstallScreenSaver')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

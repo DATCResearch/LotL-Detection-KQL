@@ -1,0 +1,18 @@
+// Title: Suspicious compiler MSBuild.exe
+//        replacing [Testing 0023] - To detect cmd.exe used MSBuild for proxy execution
+// Desc: Execute C# code with the Build Provider and proper folder structure in place.
+//       Text-based source code files may subvert analysis
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Aspnet_Compiler/
+// Ref - https://www.freebuf.com/articles/system/232074.html
+// Ref - https://www.daveaglick.com/posts/msbuild-loggers-and-logging-events
+// MITRE - https://attack.mitre.org/techniques/T1027/001/ (Defense Evasion: Trusted Developer Utilities Proxy Execution)
+// Severity: medium
+// Trigger: msbuild.exe project.csproj
+// Usecase: Compile and run code
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_lolbin_aspnet_compiler.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where ((FolderPath contains @'C:\Windows\Microsoft.NET\Framework' and FolderPath contains "aspnet_compiler.exe")
+    or (InitiatingProcessParentFileName contains "cmd.exe" and InitiatingProcessCommandLine contains "MSBuild.exe"))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, InitiatingProcessFileName, InitiatingProcessCommandLine

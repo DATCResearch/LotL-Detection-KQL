@@ -1,0 +1,19 @@
+// Title: [Hunting] - Suspicious Load of Advapi32.dll
+// Desc: Detects the load of advapi32.dll by a process running in an uncommon folder
+// Ref - https://github.com/hlldz/Phant0m
+// MITRE: https://attack.mitre.org/techniques/T1070/ (Defense Evasion: Indicator Removal)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_susp_advapi32_dll.yml
+let knownProcesses = dynamic(['teams','git','python','splunk', 'chrome', 'sh', 'conda','rps','bghelper','nissrv', 'plink']);
+DeviceImageLoadEvents 
+| where (FolderPath endswith @'\advapi32.dll' and not ((InitiatingProcessFolderPath startswith @'C:\Windows\' 
+    or InitiatingProcessFolderPath startswith @'C:\Program Files (x86)\' 
+    or InitiatingProcessFolderPath startswith @'C:\Program Files\') 
+    or (InitiatingProcessFolderPath startswith @'C:\ProgramData\Microsoft\Windows Defender\platform\' 
+    and InitiatingProcessFolderPath endswith @'\MpCmdRun.exe') 
+    or (InitiatingProcessFolderPath startswith @'C:\Users\' and InitiatingProcessFolderPath contains @'\AppData\Local\Microsoft\OneDrive\' 
+    and InitiatingProcessFolderPath endswith @'FileCoAuth.exe')))
+| where not(InitiatingProcessFolderPath has_any (knownProcesses)) and InitiatingProcessFolderPath != ""
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

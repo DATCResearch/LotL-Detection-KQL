@@ -1,0 +1,15 @@
+// Title: [Hunting] - 3rd Party Software DLL Sideloading
+// Desc: Detects DLL sideloading of DLLs that are part of third party software (zoom, discord....etc)
+// Ref - https://hijacklibs.net/ # For list of DLLs that could be sideloaded
+// MITRE: https://attack.mitre.org/techniques/T1574/001/ (Defense Evasion: Hijack Execution Flow: DLL Search Order Hijacking)
+// Severity: high
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_side_load_third_party.yml
+DeviceImageLoadEvents 
+| where ((FolderPath endswith @'\commfunc.dll' and not (FolderPath contains @'\AppData\local\Google\Chrome\Application\' 
+    or (FolderPath startswith @'C:\Program Files\Lenovo\Communications Utility\' 
+    or FolderPath startswith @'C:\Program Files (x86)\Lenovo\Communications Utility\'))) 
+    or (FolderPath endswith @'\tosbtkbd.dll' and not (FolderPath startswith @'C:\Program Files\Toshiba\Bluetooth Toshiba Stack\' 
+    or FolderPath startswith @'C:\Program Files (x86)\Toshiba\Bluetooth Toshiba Stack\')))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

@@ -1,0 +1,20 @@
+// Title: Use of Adplus.exe 
+// Desc: "AdPlus.exe" is part of the Windows SDK can be used as a lolbin to dump process memory and execute arbitrary commands
+// Ref - https://lolbas-project.github.io/lolbas/OtherMSBinaries/Adplus/
+// Ref - https://mrd0x.com/adplus-debugging-tool-lsass-dump/
+// Ref - https://www.freebuf.com/articles/system/232074.html
+// Usecase: Create memory dump and parse it offline
+// Trigger: adplus.exe -hang -pn lsass.exe -o c:\users\mr.d0x\output\folder -quiet
+// MITRE: https://attack.mitre.org/techniques (T1003.001 - Credential Access: LSASS Memory)
+// Severity: medium
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_lolbin_adplus.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\adplus.exe' or ProcessVersionInfoOriginalFileName =~ @'Adplus.exe' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'Adplus.exe' or ProcessCommandLine contains 'Adplus.exe') 
+    and (ProcessCommandLine contains @' -hang ' or ProcessCommandLine contains @' -pn ' 
+    or ProcessCommandLine contains @' -pmn ' or ProcessCommandLine contains @' -p ' 
+    or ProcessCommandLine contains @' -po ' or ProcessCommandLine contains @' -c ' 
+    or ProcessCommandLine contains @' -sc '))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

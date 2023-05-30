@@ -1,0 +1,14 @@
+// Title: [Hunting] - Microsoft Office DLL Sideload
+// Desc: Detects DLL sideloading of DLLs that are part of Microsoft Office from non standard location
+// Ref - https://hijacklibs.net/ # For list of DLLs that could be sideloaded
+// MITRE: https://attack.mitre.org/techniques/T1574/001/ (Defense Evasion: Hijack Execution Flow: DLL Search Order Hijacking)
+// Severity: high
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_side_load_office_dlls.yml
+DeviceImageLoadEvents 
+| where (FolderPath endswith @'\outllib.dll' and not (FolderPath startswith @'C:\Program Files\Microsoft Office\OFFICE' 
+    or FolderPath startswith @'C:\Program Files (x86)\Microsoft Office\OFFICE' 
+    or FolderPath startswith @'C:\Program Files\Microsoft Office\Root\OFFICE' 
+    or FolderPath startswith @'C:\Program Files (x86)\Microsoft Office\Root\OFFICE'))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

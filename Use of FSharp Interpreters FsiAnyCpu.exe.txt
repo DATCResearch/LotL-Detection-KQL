@@ -1,0 +1,17 @@
+// Title: Use of FSharp Interpreters FsiAnyCpu.exe
+// Desc: The FSharp Interpreters, FsiAnyCpu.exe and FSi.exe, can be used for AWL bypass and is listed in Microsoft recommended block rules.
+// Ref - https://lolbas-project.github.io/lolbas/OtherMSBinaries/FsiAnyCpu/
+// Ref - https://bohops.com/2020/11/02/exploring-the-wdac-microsoft-recommended-block-rules-part-ii-wfc-fsi/
+// MITRE: https://attack.mitre.org/techniques/T1059 (Execution: Command and Scripting Interpreter)
+// Severity: medium
+// Trigger: fsianycpu.exe c:\path\to\test.fsscript
+// Usecase: Execute payload with Microsoft signed binary to bypass WDAC policies
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_fsharp_interpreters.yml
+// By: Frankie Li
+// On: 07-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\fsianycpu.exe' or ProcessVersionInfoOriginalFileName =~ @'fsianycpu.exe' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'fsianycpu.exe' 
+    or FolderPath endswith @'\fsi.exe' or ProcessVersionInfoOriginalFileName =~ @'fsi.exe' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'fsi.exe')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

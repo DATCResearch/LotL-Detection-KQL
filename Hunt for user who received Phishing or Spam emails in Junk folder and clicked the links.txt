@@ -1,0 +1,25 @@
+// Title: Hunt for user who received Phishing or Spam emails in Junk folder and clicked the links
+// By: Frankie
+// On: 14-01-2023, 23-01-2023
+// Notes: Consider to move these people into a strict policy OR block the senderFromAddress
+// Ref - https://learn.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-emailevents-table?view=o365-worldwide
+let sentAction = dynamic(['Blocked', 'Junked', 'Delivered']);
+let sentLoc = dynamic(['Inbox/folder', 'Junk folder']);
+let authDetailsKey = dynamic(['SPF', 'DKIM', 'DMARC']);
+let authDetailsValue = dynamic(['pass','none','bestguesspass', 'fail']);
+let sentFromDiretion = dynamic(['Intra-org', 'Inbound']);
+EmailEvents 
+| where Timestamp > ago(30d)
+| extend PhishLevel = tostring(todynamic(ConfidenceLevel)['Phish'])
+| extend SpamLevel = tostring(todynamic(ConfidenceLevel)['Spam'])
+// extract SenderFromAddress emails that went into Inbox/folder with Phish Level or Spam Level is high
+| where DeliveryLocation == "Inbox/folder" and (PhishLevel == 'High' or SpamLevel == 'High')
+| distinct SenderFromAddress
+| join EmailEvents on SenderFromAddress
+| where Timestamp > ago(1d)
+| where DeliveryLocation has_any (sentLoc)
+| project Timestamp, NetworkMessageId, InternetMessageId,  RecipientEmailAddress, SenderDisplayName, SenderFromAddress , SenderMailFromAddress, SenderIPv4, RecipientObjectId, EmailDirection, 
+    Subject, DeliveryAction, DeliveryLocation, AuthenticationDetails, UrlCount, ConfidenceLevel, EmailActionPolicy, ThreatTypes
+| join UrlClickEvents on NetworkMessageId, $left.RecipientEmailAddress == $right.AccountUpn
+| where Timestamp > ago(1d)
+| where ConfidenceLevel != "" or EmailActionPolicy != ""

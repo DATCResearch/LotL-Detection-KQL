@@ -1,0 +1,14 @@
+// Title: OfflineScannerShell.exe Execution From Another Folder
+// Desc: Use OfflineScannerShell.exe to execute mpclient.dll library in the current working directory
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/OfflineScannerShell/
+// MITRE: https://attack.mitre.org/techniques/T1218/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: OfflineScannerShell
+// Usecase: Can be used to evade defensive countermeasures or to hide as a persistence mechanism
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_offlinescannershell.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents
+| where InitiatingProcessFolderPath contains "OfflineScannerShell.exe"
+    and not(InitiatingProcessFolderPath contains "C:\\Program Files\\Windows Defender\\Offline")
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

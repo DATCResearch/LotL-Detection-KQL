@@ -1,0 +1,11 @@
+// Title: Possible phishing emails from 3rd party domains to impersonate key persons
+// By: Frankie
+// On: 19/12/2022, 19/12/2022 , 19/12/2022
+// Note: need to modify the queryName (key person) before use
+// Note: need to modify the query time (7d is not good)
+let queryName = dynamic(['frankie','dragon']);
+let queryDomain = dynamic(['dragonadvancetech.com']);
+EmailEvents 
+| where Timestamp > ago(7d)
+| where (SenderDisplayName has_any (queryName) and not(SenderFromDomain has_any (queryDomain))) or (SenderMailFromDomain == "sample.com")
+| project Timestamp, NetworkMessageId, RecipientEmailAddress, Subject, SenderFromAddress, SenderDisplayName, SenderMailFromDomain, DeliveryAction, DeliveryLocation, EmailDirection, EmailAction

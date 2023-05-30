@@ -1,0 +1,13 @@
+// Title: LSASS Memory Dumping werfault.exe & procdump.exe
+// Desc:  Detect creation of dump files containing the memory space of lsass.exe, which contains sensitive credentials
+// Ref - https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1003/T1003.md
+// MITRE: https://attack.mitre.org/techniques/T1003/001/ (Credential Access: OS Credential Dumping: LSASS Memory)
+// Severity: high
+// https://github.com/SigmaHQ/sigma/blob/master/rules/proc_creation_win_lsass_dump.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (((ProcessCommandLine contains @'lsass' and ProcessCommandLine contains @'.dmp') 
+    and not (FolderPath endswith @'\werfault.exe')) or (FolderPath contains @'\procdump' and FolderPath endswith @'.exe' 
+    and ProcessCommandLine contains @'lsass'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

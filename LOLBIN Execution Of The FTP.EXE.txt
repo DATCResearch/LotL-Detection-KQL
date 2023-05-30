@@ -1,0 +1,16 @@
+// Title: LOLBIN Execution Of The FTP.EXE
+// Desc: Detects execution of ftp.exe script execution with the "-s" flag and any child processes ran by ftp.exe
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Ftp/
+// Ref - https://medium.com/@0xamit/lets-talk-about-security-research-discoveries-and-proper-discussion-etiquette-on-twitter-10f9be6d1939
+// MITRE: https://attack.mitre.org/techniques/T1202/ (Indirect Command Execution)
+// Severity: medium
+// Trigger: echo !calc.exe > ftpcommands.txt && ftp -s:ftpcommands.txt
+// Usecase: Spawn new process using ftp.exe. Ftp.exe runs cmd /C YourCommand
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_ftp.yml
+// By: Frankie Li
+// On: 06-05-2023
+DeviceProcessEvents 
+| where (InitiatingProcessFolderPath endswith @'\ftp.exe' 
+    or ((FolderPath endswith @'\ftp.exe' or ProcessVersionInfoOriginalFileName contains @'ftp.exe' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'ftp.exe'))) and ProcessCommandLine contains @'-s:'
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, ProcessCommandLine, FolderPath

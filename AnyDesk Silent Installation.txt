@@ -1,0 +1,11 @@
+// Title: AnyDesk Silent Installation
+// Desc: Detects AnyDesk Remote Desktop silent installation. Which can be used by attackers to gain remote access.
+// Ref - https://support.anydesk.com/Automatic_Deployment
+// Ref - https://attack.mitre.org/techniques/T1219/ (Command and Control)
+// Ref - severity: high
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_anydesk_silent_install.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where (ProcessCommandLine contains @'--install' and ProcessCommandLine contains @'--start-with-win' and ProcessCommandLine contains @'--silent')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

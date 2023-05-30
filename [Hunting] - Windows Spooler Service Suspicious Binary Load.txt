@@ -1,0 +1,18 @@
+// Title: [Hunting] - Windows Spooler Service Suspicious Binary Load
+// Desc: Detect DLL Load from Spooler Service backup folder
+// Ref - https://github.com/hhlxf/PrintNightmare 
+// Ref - https://github.com/ly4k/SpoolFool
+// Ref - https://attack.mitre.org/techniques/T1547/012/
+// MITRE: https://attack.mitre.org/techniques/T1574/012/ (Defense Evasion:  Boot or Logon Autostart Execution: Print Processors )
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_spoolsv_dll_load.yml
+let knowndlls = dynamic(['CnAdEPUIM.dll', 'D516C.DLL', 'PrintConfig.dll']);
+DeviceImageLoadEvents 
+| where (InitiatingProcessFolderPath endswith @'\spoolsv.exe' 
+    and (FolderPath contains @'\Windows\System32\spCNLB0neutral_D516C.DLLool\drivers\x64\3\' 
+    or FolderPath contains @'\Windows\System32\spool\drivers\x64\4\') 
+    and FolderPath endswith @'.dll')
+| where not(FolderPath has_any (knowndlls))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

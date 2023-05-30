@@ -1,0 +1,14 @@
+// Title: [Hunting] - Svchost DLL Search Order Hijack
+// Desc:  IKEEXT and SessionEnv service, as they call LoadLibrary on files that do not exist within C:\Windows\System32\ by default.
+// Ref - https://posts.specterops.io/lateral-movement-scm-and-dll-hijacking-primer-d2f61e8ab992
+// MITRE: https://attack.mitre.org/techniques/T1574/002/ (Defense Evasion: Hijack Execution Flow: DLL Side-Loading)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_svchost_dll_search_order_hijack.yml
+DeviceImageLoadEvents 
+| where ((InitiatingProcessFolderPath endswith @'\svchost.exe' 
+    and (FolderPath endswith @'\tsmsisrv.dll' or FolderPath endswith @'\tsvipsrv.dll' 
+    or FolderPath endswith @'\wlbsctrl.dll')) 
+    and not (FolderPath startswith @'C:\Windows\WinSxS\'))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

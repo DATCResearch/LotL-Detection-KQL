@@ -1,0 +1,14 @@
+// Title: JSC Convert Javascript To Executable
+// Desc: Detects the execution of the LOLBIN jsc.exe used by .NET to compile javascript code to .exe or .dll format
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Jsc/
+// Ref - https://www.phpied.com/make-your-javascript-a-windows-exe/
+// MITRE: https://attack.mitre.org/techniques/T1127/ (Defense Evasion: Trusted Developer Utilities Proxy Execution)
+// Severity: medium
+// Trigger: jsc.exe /t:library Library.js
+// Usecase: Compile attacker code on system. Bypass defensive counter measures.
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_jsc.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\jsc.exe' and ProcessCommandLine contains @'.js')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

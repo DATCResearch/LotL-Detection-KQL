@@ -1,0 +1,15 @@
+// Title: Custom Class Execution via Xwizard.exe
+// Desc: Xwizard tool with specific arguments which utilized to run custom class properties
+// Ref - http://www.hexacorn.com/blog/2017/07/31/the-wizard-of-x-oppa-plugx-style/
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Xwizard/
+// MITRE: https://attack.mitre.org/techniques/T1218/ (Defense Evasion: System Binary Proxy Execution)
+// Severity: medium
+// Trigger: xwizard RunWizard {00000001-0000-0000-0000-0000FEEDACDC}
+// Usecase: Run a com object created in registry to evade defensive counter measures
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_class_exec_xwizard.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\xwizard.exe' 
+    and (ProcessCommandLine matches regex @'(?i){[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}}'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

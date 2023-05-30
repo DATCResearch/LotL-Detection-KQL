@@ -1,0 +1,15 @@
+// Title: Ilasm.exe Lolbin Use Compile C-Sharp
+// Desc: Detect use of Ilasm.exe to compile c# code into dll or exe.
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Ilasm/
+// Ref - https://www.echotrail.io/insights/search/ilasm.exe
+// MITRE: Trusted Developer Utilities Proxy Execution (Defense Evasion)
+// Severity: medium
+// Trigger: ilasm.exe C:\public\test.txt /dll
+// Usecase: A description of the usecase
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_ilasm.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\ilasm.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'ilasm.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'ilasm.exe')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

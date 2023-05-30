@@ -1,0 +1,14 @@
+// Title: [Hunting] - MDE Loading DLL from Nondefault Path
+// Desc: Detects loading of Microsoft Defender's DLLs by its processes (MpCmdRun and NisSrv) from the non-default directory which may be an attempt to sideload arbitrary DLL
+// Ref -  https://www.sentinelone.com/blog/living-off-windows-defender-lockbit-ransomware-sideloads-cobalt-strike-through-microsoft-security-tool
+// MITRE: https://attack.mitre.org/techniques/T1574/002/ (Defense Evasion: Hijack Execution Flow: DLL Side-Loading)
+// Severity: high
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_defender_load_dll_from_nondefault_path.yml
+DeviceImageLoadEvents 
+| where (((InitiatingProcessFolderPath endswith @'\MpCmdRun.exe' or InitiatingProcessFolderPath endswith @'\NisSrv.exe') 
+    and FolderPath endswith @'\mpclient.dll') and not (FolderPath startswith @'C:\Program Files\Windows Defender\' 
+    or FolderPath startswith @'C:\Program Files (x86)\Windows Defender\' 
+    or FolderPath startswith @'C:\ProgramData\Microsoft\Windows Defender\Platform\'))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

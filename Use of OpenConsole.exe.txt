@@ -1,0 +1,14 @@
+// Title: Use of OpenConsole.exe
+// Desc: Detects usage of OpenConsole binary as a LOLBIN to launch other binaries to bypass application Whitelisting
+// Ref - https://lolbas-project.github.io/lolbas/OtherMSBinaries/OpenConsole/
+// MITRE: https://attack.mitre.org/techniques/T1202/ (Defense Evasion: Indirect Command Execution)
+// Severity: medium
+// Trigger: OpenConsole.exe calc
+// Usecase: Use OpenConsole.exe as a proxy binary to evade defensive counter-measures
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_openconsole.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((InitiatingProcessVersionInfoOriginalFileName =~ @'OpenConsole.exe' or ProcessVersionInfoOriginalFileName =~ @'OpenConsole.exe' 
+    or FolderPath endswith @'\OpenConsole.exe') and not (FolderPath startswith @'C:\Program Files\WindowsApps\Microsoft.WindowsTerminal'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

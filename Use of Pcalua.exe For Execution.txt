@@ -1,0 +1,16 @@
+// Title: Use of Pcalua.exe For Execution
+// Desc: Execute commands and binaries from the context of The program compatibility assistant (Pcalua.exe). This is used as a LOLBIN for example to bypass application whitelisting
+// Desc: Pcalua是Windows进程兼容性助理(Program Compatibility Assistant)的一个组件
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Pcalua/
+// Ref - https://pentestlab.blog/2020/07/06/indirect-command-execution/
+// Ref - https://attack.mitre.org/techniques/T1202/ (Defense Evasion: Indirect Command Execution )
+// Ref - severity: medium
+// Trigger: pcalua.exe -a \\server\payload.dll
+// Trigger: pcalua.exe -a C:\Windows\system32\javacpl.cpl -c Java
+// Usecase: Proxy execution of remote dll file
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_pcalua.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\pcalua.exe' and ProcessCommandLine contains @' -a')
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

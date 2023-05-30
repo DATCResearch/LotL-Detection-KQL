@@ -1,0 +1,16 @@
+// Title: Suspicious Execution of InstallUtil To Download
+// Desc: Detects the use InstallUtil.exe to download files
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Installutil/
+// Ref - https://pentestlab.blog/2017/05/08/applocker-bypass-installutil/
+// MITRE: System Binary Proxy Execution: InstallUtil (T1218: Defense Evasion)
+// Severity: medium
+// Trigger: InstallUtil.exe /logfile= /LogToConsole=false /U AllTheThings.dll
+// Usecase: Use to execute code and bypass application whitelisting
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_installutil_download.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\InstallUtil.exe' or InitiatingProcessVersionInfoOriginalFileName =~ @'InstallUtil.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'InstallUtil.exe') 
+    and (ProcessCommandLine contains @'http://' or ProcessCommandLine contains @'https://' or ProcessCommandLine contains @'ftp://'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

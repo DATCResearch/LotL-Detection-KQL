@@ -1,0 +1,14 @@
+// Title: Suspicious Cmdl32.exe Execution
+// Desc: lolbas Cmdl32 is use to download a payload to evade antivirus
+// Ref - 
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Cmdl32/
+// Ref - https://attack.mitre.org/techniques/T1218/ (Defense Evasion: System Binary Proxy Execution)
+// Ref - severity: medium
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_cmdl32.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\cmdl32.exe' or ProcessVersionInfoOriginalFileName =~ @'CMDL32.EXE' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'CMDL32.EXE') 
+    and (ProcessCommandLine contains @'/vpn ' and ProcessCommandLine contains @'/lan '))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

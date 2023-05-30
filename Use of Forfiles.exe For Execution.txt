@@ -1,0 +1,19 @@
+// Title: Use of Forfiles.exe For Execution
+// Desc: forfiles is used as a LOLBIN for example to bypass application whitelisting.
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Forfiles/
+// Ref - https://pentestlab.blog/2020/07/06/indirect-command-execution/
+// Ref - https://oddvar.moe/2018/01/14/putting-data-in-alternate-data-streams-and-how-to-execute-it/
+// MITRE: https://attack.mitre.org/techniques/T1202 (Defense Evasion: Indirect Command Execution)
+// Severity: medium
+// Trigger: forfiles /p c:\windows\system32 /m notepad.exe /c calc.exe
+// Usecase: Use forfiles to start a new process to evade defensive counter measures
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_findstr.yml
+// By: Frankie Li
+// On: 06-05-2023
+DeviceProcessEvents 
+| where ((FolderPath endswith @'\forfiles.exe' or ProcessVersionInfoOriginalFileName contains @'forfiles.exe' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'forfiles.exe') 
+    and (ProcessCommandLine contains @' /p ' or ProcessCommandLine contains @' -p ') 
+    and (ProcessCommandLine contains @' /m ' or ProcessCommandLine contains @' -m ') 
+    and (ProcessCommandLine contains @' /c ' or ProcessCommandLine contains @' -c '))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

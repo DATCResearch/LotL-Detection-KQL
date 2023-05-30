@@ -1,0 +1,24 @@
+// Title: [hunting] - Mimikatz Command Line
+// Desc:  Detection well-known mimikatz command line arguments
+// Ref - https://www.slideshare.net/heirhabarov/hunting-for-credentials-dumping-in-windows-environment
+// MITRE: https://attack.mitre.org/techniques/T1003/ (Credential Access: OS Credential Dumping)
+// Severity: medium
+// https://github.com/SigmaHQ/sigma/blob/master/rules/proc_creation_win_mimikatz_command_line.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where ((((ProcessCommandLine contains @'DumpCreds' or ProcessCommandLine contains @'invoke-mimikatz') or 
+    ((ProcessCommandLine contains @'rpc' or ProcessCommandLine contains @'token' or ProcessCommandLine contains @'crypto' 
+    or ProcessCommandLine contains @'dpapi' or ProcessCommandLine contains @'sekurlsa' or ProcessCommandLine contains @'kerberos' 
+    or ProcessCommandLine contains @'lsadump' or ProcessCommandLine contains @'privilege' or ProcessCommandLine contains @'process' 
+    or ProcessCommandLine contains @'vault') 
+    and ProcessCommandLine contains @'::')) 
+    or ((ProcessCommandLine contains @'aadcookie' or ProcessCommandLine contains @'detours' or ProcessCommandLine contains @'memssp' 
+    or ProcessCommandLine contains @'mflt' or ProcessCommandLine contains @'ncroutemon' or ProcessCommandLine contains @'ngcsign' 
+    or ProcessCommandLine contains @'printnightmare' or ProcessCommandLine contains @'skeleton' 
+    or ProcessCommandLine contains @'preshutdown' or ProcessCommandLine contains @'mstsc' 
+    or ProcessCommandLine contains @'multirdp') and ProcessCommandLine contains @'::')) 
+    and not (ProcessCommandLine contains @'function Convert-GuidToCompressedGuid' 
+    or (InitiatingProcessFolderPath endswith @'\AppData\Local\Programs\Microsoft VS Code\Code.exe' 
+    and (ProcessCommandLine contains @'/d /s /c ') and (ProcessCommandLine contains @'checkfilenameiocs --ioc-path '))))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

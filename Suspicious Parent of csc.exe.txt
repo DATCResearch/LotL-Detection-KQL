@@ -1,0 +1,15 @@
+// Title: Suspicious Parent of csc.exe
+// Desc: Detects a suspicious parent of csc.exe, which could by a sign of payload delivery (.NET)
+// Ref - https://lolbas-project.github.io/lolbas/Binaries/Csc/
+// Ref - https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/command-line-building-with-csc-exe
+// MITRE: https://attack.mitre.org/techniques/T1127/ (Defense Evasion: Trusted Developer Utilities Proxy Execution)
+// Severity: high
+// Trigger: csc -target:library File.cs
+// Usecase: Compile attacker code on system. Bypass defensive counter measures.
+// https://github.com/SigmaHQ/sigma/blob/master/rules/windows/proc_creation_win_susp_csc.yml
+// By: Frankie Li
+// On: 15-05-2023
+DeviceProcessEvents 
+| where (FolderPath endswith @'\csc.exe' and (InitiatingProcessFolderPath endswith @'\wscript.exe' 
+    or InitiatingProcessFolderPath endswith @'\cscript.exe' or InitiatingProcessFolderPath endswith @'\mshta.exe'))
+| project Timestamp, DeviceName, AccountName, InitiatingProcessParentFileName, FolderPath, ProcessCommandLine

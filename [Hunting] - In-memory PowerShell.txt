@@ -1,0 +1,38 @@
+// Title: [Hunting] - In-memory PowerShell
+// Desc: Detects loading of essential DLL used by PowerShell, but not by the process powershell.exe. Detects meterpreter's "load powershell" extension.
+// Ref - https://adsecurity.org/?p=2921
+// Ref - https://github.com/p3nt4/PowerShdll
+// MITRE: https://attack.mitre.org/techniques/T1059/001/ (Execution: Command and Scripting Interpreter: PowerShell)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_in_memory_powershell.yml
+DeviceImageLoadEvents 
+| where not(InitiatingProcessFileName contains "wa_3rd_party_host" or InitiatingProcessFileName contains "microsoft" or InitiatingProcessFileName contains "lenovo")
+| where ((FolderPath endswith @'\System.Management.Automation.Dll' 
+    or FolderPath endswith @'\System.Management.Automation.ni.Dll') 
+    and not (((InitiatingProcessFolderPath in~ (@'C:\Windows\System32\dsac.exe', @'C:\Program Files\PowerShell\7\pwsh.exe')) 
+    or (InitiatingProcessFolderPath endswith @'\powershell.exe' 
+    or InitiatingProcessFolderPath endswith @'\powershell_ise.exe' 
+    or InitiatingProcessFolderPath endswith @'\WINDOWS\System32\sdiagnhost.exe' 
+    or InitiatingProcessFolderPath endswith @'\mscorsvw.exe' 
+    or InitiatingProcessFolderPath endswith @'\WINDOWS\System32\RemoteFXvGPUDisablement.exe' 
+    or InitiatingProcessFolderPath endswith @'\sqlps.exe' 
+    or InitiatingProcessFolderPath endswith @'\wsmprovhost.exe' 
+    or InitiatingProcessFolderPath endswith @'\winrshost.exe' 
+    or InitiatingProcessFolderPath endswith @'\syncappvpublishingserver.exe' 
+    or InitiatingProcessFolderPath endswith @'\runscripthelper.exe' 
+    or InitiatingProcessFolderPath endswith @'\ServerManager.exe' 
+    or InitiatingProcessFolderPath endswith @'\Microsoft SQL Server Management Studio *\Common*\IDE\Ssms.exe' 
+    or InitiatingProcessFolderPath endswith @'\IDE\devenv.exe' 
+    or InitiatingProcessFolderPath endswith @'\ServiceHub.VSDetouredHost.exe' 
+    or InitiatingProcessFolderPath endswith @'\ServiceHub.SettingsHost.exe' 
+    or InitiatingProcessFolderPath endswith @'\ServiceHub.Host.CLR.x86.exe' 
+    or InitiatingProcessFolderPath endswith @'\Citrix\ConfigSync\ConfigSyncRun.exe') 
+    or (InitiatingProcessFolderPath startswith @'C:\Program Files (x86)\Microsoft Visual Studio\' 
+    or InitiatingProcessFolderPath startswith @'C:\Program Files\Microsoft Visual Studio\')) 
+    or (InitiatingProcessFolderPath startswith @'C:\Windows\Temp\asgard2-agent\' 
+    and (InitiatingProcessFolderPath endswith @'\thor64.exe' 
+    or InitiatingProcessFolderPath endswith @'\thor.exe')) or isempty(InitiatingProcessFolderPath)))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine

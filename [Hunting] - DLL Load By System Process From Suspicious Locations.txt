@@ -1,0 +1,17 @@
+// Title: [Hunting] - DLL Load By System Process From Suspicious Locations
+// Desc: Detects when a system process (ie located in system32, syswow64...etc) loads a DLL from a suspicious location such as %temp%
+// Ref - https://github.com/hackerhouse-opensource/iscsicpl_bypassUAC (Idea)
+// MITRE: https://attack.mitre.org/techniques/T1070/ (T1070: Defense Evasion: Indicator Removal)
+// Severity: medium
+// By: Frankie Li
+// On: 16-05-2023
+// From: https://github.com/SigmaHQ/sigma/blob/master/rules/windows/image_load/image_load_susp_dll_load_system_process.yml
+DeviceImageLoadEvents 
+| where ((InitiatingProcessFolderPath startswith @'C:\Windows\' 
+    and (FolderPath contains @'\Users\Public\' or FolderPath contains @'\Downloads\' 
+    or FolderPath contains @'\AppData\Local\Temp\' or FolderPath contains @'C:\PerfLogs\')) 
+    and not ((InitiatingProcessFolderPath endswith @'\msiexec.exe' or (FolderPath startswith @'C:\Program Files\' 
+    or FolderPath startswith @'C:\Program Files (x86)\')) or (InitiatingProcessFolderPath =~ @'C:\Windows\System32\cleanmgr.exe' 
+    and FolderPath endswith @'\ssshim.dll') or (InitiatingProcessFolderPath startswith @'C:\Windows\Microsoft.NET\Framework\v' 
+    and InitiatingProcessFolderPath endswith @'\mscorsvw.exe' and FolderPath contains @'\AppData\Local\Temp\')))
+| project Timestamp, DeviceName, InitiatingProcessFolderPath, InitiatingProcessFileName, FolderPath, InitiatingProcessParentFileName, InitiatingProcessCommandLine
